@@ -26,11 +26,11 @@ source venv/bin/activate
 
 ### windows
 ```bash
-python -m venv venv
-venv\Scripts\activate
+python -m venv project_env
+project_env\Scripts\activate
 ```
 
-
+actual virtual env name may vary ,use the previously created venv to run it 
 pip install -r requirements.txt            // to install packages 
 
 

@@ -30,8 +30,8 @@ python -m venv project_env
 project_env\Scripts\activate
 ```
 
-actual virtual env name may vary ,use the previously created venv to run it 
-pip install -r requirements.txt            // to install packages 
+##### actual virtual env name may vary ,use the previously created venv to run it 
+##### pip install -r requirements.txt            // to install packages 
 
 
 after making any updates or installing new packages kindly please update the requirements.txt by running

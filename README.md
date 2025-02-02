@@ -22,9 +22,13 @@ Run the following commands in your terminal:
 python -m venv venv
 source venv/bin/activate
 
+```
+
 ### windows
+```bash
 python -m venv venv
 venv\Scripts\activate
+```
 
 
 pip install -r requirements.txt            // to install packages 

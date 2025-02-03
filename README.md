@@ -37,16 +37,21 @@ It’s recommended to use a virtual environment to manage dependencies for this 
 #### For macOS/Linux:  
 ```bash
 python -m venv venv
+```
+#### activating the venv   (skip the above if u already have initialized a virtual environment)
+```bash
 source venv/bin/activate
 ```
 
 #### For Windows:  
 ```bash
 python -m venv project_env
+```
+```bash
 project_env\Scripts\activate
 ```
 
-> Note: Replace `project_env` with the name of your virtual environment.
+> Note: Replace `project_env` with the name of your virtual environment. and keep in mind that u dont need to create a virtual env every time u run the prgrm ,use the virtual env that u created earlier for this project ,just activate using the second command 
 
 ---
 
@@ -66,7 +71,7 @@ pip freeze > requirements.txt
 ---
 
 ### 4️⃣ Set Up the Samples Folder  
-Before you run the project, ensure that the `Samples` folder is populated with images of celebrities. You can clone or download the folder using the link you will provide. The system will load the images from this folder, compute embeddings, and store them in `sample_embeddings.pkl`.
+Before you run the project, ensure that the `Samples` folder is populated with images of celebrities. You can clone or download the folder using the  dataset repository. The system will load the images from this folder, compute embeddings, and store them in `sample_embeddings.pkl`.
 
 ---
 
@@ -83,7 +88,7 @@ python celebrityDetector.py
 > - Compute embeddings for each image.
 > - Store the embeddings in `sample_embeddings.pkl` for faster future matches.
 
-This initial run can take **5-10 minutes**, depending on the number of images in the `Samples` folder and the system’s performance.
+## This initial run can take **5-10 minutes**, depending on the number of images in the `Samples` folder and the system’s performance.
 
 ---
 

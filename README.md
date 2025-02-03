@@ -16,13 +16,18 @@ Before setting up the project, ensure you have the following:
 
 ## 🚀 Setup Instructions
 
-### 1️⃣ Clone the Repository  
-First, clone the repository to your local machine. Use the link you will provide for the `Samples` folder later.
+### 1️⃣ Clone the Repository or Download as ZIP  
+
+#### **For Cloning via Git**:  
+If you have Git installed, you can clone the repository using the following command:
 
 ```bash
-git clone <repository-link>
-cd <project-directory>
+git clone https://github.com/abinrajmk8/celebrity-look-alike.git
+cd celebrity-look-alike
 ```
+
+#### **For Windows Users (Download ZIP)**:  
+If you do not have Git installed, you can download the repository as a ZIP file by clicking the "Code" button on the repository page, then select **Download ZIP**. After downloading, extract the contents and navigate to the extracted folder.
 
 ---
 

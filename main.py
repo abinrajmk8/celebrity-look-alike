@@ -6,6 +6,10 @@ import matplotlib.pyplot as plt
 from deepface import DeepFace
 import concurrent.futures
 import gdown
+import time
+import pygame
+
+
 
 # Suppress TensorFlow warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -16,6 +20,12 @@ face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_fronta
 
 # Ensure the "Samples" directory exists
 os.makedirs("Samples", exist_ok=True)
+
+pygame.mixer.init()
+
+audioOn = True 
+neutral_start_time = None
+
 
 # DeepFace model directory
 model_dir = os.path.expanduser("~/.deepface/weights")
@@ -66,7 +76,33 @@ print("[✔] Sample embeddings loaded successfully!")
 # Open Webcam
 cap = cv2.VideoCapture(0)
 
-def find_best_match(captured_embedding, sample_embeddings):
+def find_best_match(captured_embedding, sample_embeddings, threshold=0.5):
+    """Compare captured embedding with sample embeddings and find the best match."""
+    best_match = None
+    smallest_distance = float("inf")
+    best_match_path = None
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        results = executor.map(
+            lambda img_path: (
+                img_path, 
+                DeepFace.verify(captured_embedding, sample_embeddings[img_path], model_name="Facenet512", enforce_detection=False)['distance']
+            ), sample_embeddings.keys()
+        )
+
+    for img_path, distance in results:
+        print(f"Comparing with {os.path.basename(img_path)} - Distance: {distance:.4f}")
+        if distance < threshold and distance < smallest_distance:  # Only allow strong matches
+            smallest_distance = distance
+            best_match = os.path.basename(img_path)
+            best_match_path = img_path
+
+    if smallest_distance >= threshold:
+        print("🚫 No strong match found! Not identifying incorrectly.")
+        return None, None, None
+
+    return best_match, best_match_path, smallest_distance
+
     """Compare the captured embedding with all sample embeddings and find the best match"""
     best_match = None
     smallest_distance = float("inf")
@@ -89,6 +125,57 @@ def find_best_match(captured_embedding, sample_embeddings):
 
     return best_match, best_match_path, smallest_distance
 
+def verify_with_LBPH(img_path1, img_path2):
+    img1 = cv2.imread(img_path1, cv2.IMREAD_GRAYSCALE)
+    img2 = cv2.imread(img_path2, cv2.IMREAD_GRAYSCALE)
+
+    if img1 is None or img2 is None:
+        return float("inf")  # If images cannot be loaded
+
+    # Resize both images to the same size
+    img1 = cv2.resize(img1, (100, 100))
+    img2 = cv2.resize(img2, (100, 100))
+
+    recognizer = cv2.face.LBPHFaceRecognizer_create()
+    recognizer.train([img1], np.array([0]))
+
+    label, confidence = recognizer.predict(img2)
+    return confidence  # Lower confidence means a better match
+
+def detect_neutral_expression(result):
+    global neutral_start_time, audioOn
+
+    if isinstance(result, list) and result:
+        emotion = result[0]['dominant_emotion']
+
+        if emotion in ["sad", "angry", "neutral"]:  # If not happy
+            if neutral_start_time is None:
+                neutral_start_time = time.time()
+            elif time.time() - neutral_start_time >= 4:  # 5-second condition
+                if audioOn:  # Play audio only if enabled
+                    pygame.mixer.music.load("audio.mp3")
+                    pygame.mixer.music.play()
+                    audioOn = False  # Ensure it plays only once per match
+        else:
+            neutral_start_time = None  # Reset timer if expression changes
+
+   # global neutral_start_time, audioOn
+
+    if isinstance(result, list) and result:
+        emotion = result[0]['dominant_emotion']
+
+        if emotion in [ "neutral" , "sad" , "angry"]:
+            if neutral_start_time is None:
+                neutral_start_time = time.time()
+            elif time.time() - neutral_start_time >= 5:  # 6 seconds
+                if audioOn:  # Play audio only if audioOn is True
+                    pygame.mixer.music.load("audio.mp3")
+                    pygame.mixer.music.play()
+                    audioOn = False  # Ensure it only plays once per match
+        else:
+            neutral_start_time = None  # Reset timer if expression changes
+
+
 while True:
     ret, frame = cap.read()
     if not ret:
@@ -108,6 +195,7 @@ while True:
 
             try:
                 result = DeepFace.analyze(face_rgb, actions=['emotion'], enforce_detection=False)
+                detect_neutral_expression(result)
                 if isinstance(result, list) and result:
                     emotion = result[0]['dominant_emotion']
                     confidence = result[0]['emotion'][emotion]
@@ -138,6 +226,7 @@ while True:
         best_match, best_match_path, smallest_distance = find_best_match(captured_embedding, sample_embeddings)
 
         if best_match:
+            
             print(f"✅ Closest Match Found: {best_match}")
             print(f"🖼 Matched Image Path: {best_match_path}")
             print(f"🔹 Distance: {smallest_distance}")
@@ -161,6 +250,8 @@ while True:
             axes[1].set_title(f"Closest Match ({best_match})")
 
             plt.show()
+            neutral_start_time = None
+            audioOn = True 
 
         os.remove(captured_image_path)
 
